@@ -6,6 +6,7 @@ import configureBasemap from '../../../basemaps.config';
 
 export const pmtilesProtocol = new Protocol({ metadata: true });
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
+maplibregl.setMaxParallelImageRequests(64);
 
 const MAPTERHORN_SOURCE_ID = 'mapterhorn-terrain';
 const MAPTERHORN_HILLSHADE_ID = 'mapterhorn-hillshade';
