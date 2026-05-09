@@ -204,6 +204,8 @@ export default class StacMapLayer {
         pmtilesProtocol.add(pm);
         const header = await pm.getHeader();
 
+        this._prefetchDirectories(pm, header);
+
         if (header.tileType === 1) {
           await this._addVectorPmtiles(pm, url, sourceId);
         } else {
@@ -303,6 +305,20 @@ export default class StacMapLayer {
       source: sourceId,
     });
     this._pmtilesLayerIds.push(layerId);
+  }
+
+  _prefetchDirectories(pm, header) {
+    const cache = pm.cache;
+    const source = pm.source;
+    cache.getDirectory(source, header.rootDirectoryOffset, header.rootDirectoryLength, header)
+      .then(rootDir => {
+        const leafEntries = rootDir.filter(e => e.runLength === 0);
+        const fetches = leafEntries.map(e =>
+          cache.getDirectory(source, header.leafDirectoryOffset + e.offset, e.length, header)
+        );
+        return Promise.all(fetches);
+      })
+      .catch(() => {});
   }
 
   async _addCogAssets(assets) {
